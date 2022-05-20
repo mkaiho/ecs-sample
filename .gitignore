@@ -1,3 +1,7 @@
 # Secrets
 .ssh/
 .envrc
+
+# bin
+_deployments/bin/
+_deployments/zip/
