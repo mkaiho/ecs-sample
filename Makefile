@@ -47,3 +47,6 @@ test-report:
 clean:
 	@rm -rf ./${BIN_DIR}
 	@rm -rf ./${ARCHIVE_DIR}
+
+build-image: $(BINARIES)
+	@sudo docker build -t ecs-sample .
