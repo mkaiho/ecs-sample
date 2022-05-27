@@ -6,6 +6,7 @@ ARG SRC_MODULE=github.com/mkaiho/ecs-sample
 
 RUN apt-get update -y && apt-get install -y \
   curl gcc make git zip unzip jq openssl
+RUN useradd -m "devuser"
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
   && unzip awscliv2.zip \
@@ -18,7 +19,9 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
   && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
 
 RUN mkdir -p /go/src/$SRC_MODULE && chmod -R 777 /go
-RUN chsh -s /bin/bash
+RUN chsh devuser -s /bin/bash
+
+USER devuser
 
 WORKDIR /go/src/$SRC_MODULE
 
