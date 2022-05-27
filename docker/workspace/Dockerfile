@@ -1,13 +1,11 @@
-FROM amazonlinux:2
+FROM debian:bullseye
 
-ARG GO_VERSION=1.17.5
-ARG NODE_VERSION=16.13.1
+ARG GO_VERSION=1.18.2
+ARG NODE_VERSION=16.15.0
 ARG SRC_MODULE=github.com/mkaiho/ecs-sample
 
-RUN yum update -y && yum install -y \
-  sudo tar curl gcc make git zip unzip jq openssl \
-&& amazon-linux-extras install docker
-RUN useradd "ec2-user" && echo "ec2-user ALL=NOPASSWD: ALL" >> /etc/sudoers
+RUN apt-get update -y && apt-get install -y \
+  curl gcc make git zip unzip jq openssl
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
   && unzip awscliv2.zip \
@@ -17,25 +15,24 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 && curl -L -o direnv https://github.com/direnv/direnv/releases/download/v2.29.0/direnv.linux-amd64 \
   && chmod +x direnv \
   && mv direnv /usr/local/bin/ \
-  && echo 'eval "$(direnv hook bash)"' >> /home/ec2-user/.bashrc
+  && echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
 
 RUN mkdir -p /go/src/$SRC_MODULE && chmod -R 777 /go
+RUN chsh -s /bin/bash
 
-USER ec2-user
 WORKDIR /go/src/$SRC_MODULE
 
 RUN git clone https://github.com/anyenv/anyenv ~/.anyenv \
-  && echo 'export PATH="$HOME/.anyenv/bin:$PATH"' >> ~/.bash_profile \
-  && echo 'eval "$(anyenv init -)"' >> ~/.bash_profile \
-  && (~/.anyenv/bin/anyenv init || :) \
-  && source ~/.bash_profile \
-  && echo y | anyenv install --init \
-  && anyenv install nodenv \
-  && anyenv install goenv \
-  && source ~/.bash_profile \
-  && nodenv install $NODE_VERSION \
-  && nodenv global $NODE_VERSION \
-  && npm install -g aws-cdk aws-cdk-local \
-  && goenv install $GO_VERSION \
-  && goenv global $GO_VERSION \
-  && echo 'alias aws-local="aws --endpoint http://localstack:4566"' >> ~/.bashrc
+&& echo 'export PATH="$HOME/.anyenv/bin:$PATH"' >> ~/.bash_profile \
+&& echo 'eval "$(anyenv init -)"' >> ~/.bash_profile \
+&& . ~/.bash_profile \
+&& echo y | anyenv install --init \
+&& anyenv install nodenv \
+&& anyenv install goenv \
+&& . ~/.bash_profile \
+&& nodenv install $NODE_VERSION \
+&& nodenv global $NODE_VERSION \
+&& npm install -g aws-cdk aws-cdk-local \
+&& goenv install $GO_VERSION \
+&& goenv global $GO_VERSION \
+&& echo 'alias aws-local="aws --endpoint http://localstack:4566"' >> ~/.bashrc
